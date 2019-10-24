@@ -42,6 +42,8 @@ const GET_REPOSITORIES_OF_CURRENT_USER = gql`
 `;
 
 const Profile = () => (
+  // Query receives the result as an arugment to the
+  // function in its render props
   <Query query={GET_REPOSITORIES_OF_CURRENT_USER}>
     {({ data, loading, error }) => {
       if (error) {
