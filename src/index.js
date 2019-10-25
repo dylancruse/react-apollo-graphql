@@ -43,7 +43,7 @@ const httpLink = new HttpLink({
 const link = ApolloLink.from([errorLink, httpLink]);
 
 // Cache where data is managed by Apollo Client
-// (normalizes data, caches requests, read/write)
+// (read/write, normalize data, cache requests)
 const cache = new InMemoryCache();
 
 // Initialize Apollo Client with link and cache configs
