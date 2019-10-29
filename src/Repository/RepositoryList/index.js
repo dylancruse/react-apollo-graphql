@@ -3,6 +3,7 @@ import React, { Fragment } from 'react';
 import FetchMore from '../../FetchMore';
 import RepositoryItem from '../RepositoryItem';
 import Issues from '../../Issue';
+import Comments from '../../Comments';
 
 import '../style.css';
 
@@ -41,6 +42,11 @@ const RepositoryList = ({
         <RepositoryItem {...node} />
 
         <Issues 
+          repositoryName={node.name}
+          repositoryOwner={node.owner.login}
+        />
+
+        <Comments 
           repositoryName={node.name}
           repositoryOwner={node.owner.login}
         />
