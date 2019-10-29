@@ -5,6 +5,7 @@ import { Query } from 'react-apollo';
 import IssueItem from '../IssueItem';
 import Loading from '../../Loading';
 import ErrorMessage from '../../Error';
+import { ButtonUnobtrusive } from '../../Button';
 
 import './style.css';
 
@@ -27,38 +28,89 @@ const GET_ISSUES_OF_REPOSITORY = gql`
   }
 `;
 
-const Issues = ({
-  repositoryOwner,
-  repositoryName,
-}) => (
-  <div className="Issues">
-    <Query
-      query={GET_ISSUES_OF_REPOSITORY}
-      variables={{
-        repositoryOwner,
-        repositoryName,
-      }}
-    >
-      {({ data, loading, error }) => {
-        if (error) {
-          return <ErrorMessage error={error} />
+const ISSUE_STATES = {
+  NONE: 'NONE',
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+}
+
+const TRANSITION_LABELS = {
+  [ISSUE_STATES.NONE]: 'Show Open Issues',
+  [ISSUE_STATES.OPEN]: 'Show Closed Issues',
+  [ISSUE_STATES.CLOSED]: 'Hide Issues',
+};
+
+const TRANSITION_STATE = {
+  [ISSUE_STATES.NONE]: ISSUE_STATES.OPEN,
+  [ISSUE_STATES.OPEN]: ISSUE_STATES.CLOSED,
+  [ISSUE_STATES.CLOSED]: ISSUE_STATES.NONE,
+};
+
+const isShow = issueState => issueState !== ISSUE_STATES.NONE;
+
+class Issues extends React.Component {
+  state = {
+    issueState: ISSUE_STATES.NONE,
+  }
+
+  onChangeIssueState = nextIssueState => {
+    this.setState({ issueState: nextIssueState });
+  }
+
+  render() {
+    const { issueState } = this.state;
+    const { repositoryName, repositoryOwner } = this.props;
+
+    return (
+      <div className="Issues">
+        <ButtonUnobtrusive
+          onClick={() => 
+            this.onChangeIssueState(TRANSITION_STATE[issueState])
+          }
+        >
+          {TRANSITION_LABELS[issueState]}
+        </ButtonUnobtrusive>
+
+        {isShow(issueState) && (
+          <Query
+            query={GET_ISSUES_OF_REPOSITORY}
+            variables={{
+              repositoryOwner,
+              repositoryName,
+            }}
+          >
+            {({ data, loading, error }) => {
+              if (error) {
+                return <ErrorMessage error={error} />
+              }
+
+              const { repository } = data;
+
+              if (loading && !repository) {
+                return <Loading />;
+              }
+
+              const filteredRepository = {
+                issues: {
+                  edges: repository.issues.edges.filter(
+                    issue => issue.node.state === issueState,
+                  ),
+                },
+              };
+
+              if (filteredRepository.issues.edges.lenth === 0) {
+                return <div className="IssueList">No Issues</div>;
+              }
+
+              return <IssueList issues={filteredRepository.issues} />
+            }}
+          </Query>
+        )
         }
-
-        const { repository } = data;
-
-        if (loading && !repository) {
-          return <Loading />;
-        }
-
-        if (repository.issues.edges.lenth === 0) {
-          return <div className="IssueList">No Issues</div>;
-        }
-
-        return <IssueList issues={repository.issues} />
-      }}
-    </Query>
-  </div>
-);
+      </div>
+    );
+  }
+}
 
 const IssueList = ({ issues }) => (
   <div className="IssueList">
