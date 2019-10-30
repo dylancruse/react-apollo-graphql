@@ -1,5 +1,5 @@
 import React from 'react'
-import { Query } from 'react-apollo';
+import { Query, ApolloConsumer } from 'react-apollo';
 import gql from 'graphql-tag';
 
 import Loading from '../../Loading';
@@ -39,49 +39,67 @@ class Comments extends React.Component {
   }
 
   onCommentButtonClick = () => {
-    console.log('clicked');
     this.setState({ showComments: !this.state.showComments })
   }
+
+  prefetchComments = (client, repositoryName, repositoryOwner) => {
+    client.query({
+      query: GET_COMMENTS_OF_REPOSITORY,
+      variables: {
+        repositoryName,
+        repositoryOwner
+      }
+    });
+  };
 
   render() {
     const { repositoryName, repositoryOwner } = this.props;
     const { showComments } = this.state;
     return (
-      <div className="Comments-Wrapper">
-        <ButtonUnobtrusive
-          onClick={() => this.onCommentButtonClick()}
-        >
-          {showComments ? 'Hide' : 'Show'}{' '}Comments
-        </ButtonUnobtrusive>
-        {showComments && (
-            <div className="Comments">
-            <h3>Comments</h3>
-            <Query
-              query={GET_COMMENTS_OF_REPOSITORY}
-              variables={{ repositoryName, repositoryOwner }}
+      <ApolloConsumer>
+        {client =>
+          <div className="Comments-Wrapper">
+            <ButtonUnobtrusive
+              onClick={() => this.onCommentButtonClick()}
+              onMouseOver={() => this.prefetchComments(
+                client,
+                repositoryName, 
+                repositoryOwner
+              )}
             >
-              {({ data, loading, error}) => {
-                if (error) {
-                  return <ErrorMessage error={error} />
-                }
-                
-                const { repository } = data;
+              {showComments ? 'Hide' : 'Show'}{' '}Comments
+            </ButtonUnobtrusive>
+            {showComments && (
+                <div className="Comments">
+                <h3>Comments</h3>
+                <Query
+                  query={GET_COMMENTS_OF_REPOSITORY}
+                  variables={{ repositoryName, repositoryOwner }}
+                >
+                  {({ data, loading, error}) => {
+                    if (error) {
+                      return <ErrorMessage error={error} />
+                    }
+                    
+                    const { repository } = data;
 
-                if (loading && !repository) {
-                  return <Loading />;
-                }
+                    if (loading && !repository) {
+                      return <Loading />;
+                    }
 
-                if(repository.commitComments.edges.length === 0) {
-                  return <div>No Comments...</div>
-                }
+                    if(repository.commitComments.edges.length === 0) {
+                      return <div>No Comments...</div>
+                    }
 
-                return <CommentList repository={repository} />;
-                
-              }}
-            </Query>
+                    return <CommentList repository={repository} />;
+                    
+                  }}
+                </Query>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        }
+      </ApolloConsumer>
     );
   }
 }
