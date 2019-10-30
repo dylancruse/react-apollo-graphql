@@ -1,6 +1,15 @@
 .Comments {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
   text-align: center;
   margin: 10px 20px;
+  padding: 0 10px;
+}
+
+.Comments-Wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }

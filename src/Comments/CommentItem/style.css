@@ -1,0 +1,20 @@
+.CommentItem {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: stretch;
+  border-top: 1px solid #333;
+  padding: 0 25px;
+}
+
+.CommentItem-info {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.CommentItem-info-span {
+  font-weight: 700;
+}
