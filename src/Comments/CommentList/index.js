@@ -88,7 +88,7 @@ class Comments extends React.Component {
                     }
 
                     if(repository.commitComments.edges.length === 0) {
-                      return <div>No Comments...</div>
+                      return <div>No Comments</div>
                     }
 
                     return <CommentList repository={repository} />;
